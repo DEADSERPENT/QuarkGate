@@ -1,12 +1,14 @@
 package org.acme.gateway.model;
 
+import org.eclipse.microprofile.graphql.Ignore;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * GraphQL Type representing an Order.
- * Contains nested products resolved via OrderResolver.
+ * The "products" and "payment" fields are resolved lazily via OrderResolver @Source methods.
  */
 public class Order {
 
@@ -16,9 +18,8 @@ public class Order {
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
 
-    // Product IDs from the Order service; resolved to full Product objects by the gateway
+    @Ignore
     private List<Long> productIds;
-    private List<Product> products;
 
     public Order() {
     }
@@ -79,13 +80,5 @@ public class Order {
 
     public void setProductIds(List<Long> productIds) {
         this.productIds = productIds;
-    }
-
-    public List<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<Product> products) {
-        this.products = products;
     }
 }
