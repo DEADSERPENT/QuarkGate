@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Gateway</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #0d1117; color: #c9d1d9; }
+        h1 { color: #58a6ff; border-bottom: 1px solid #21262d; padding-bottom: 16px; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px; margin: 12px 0; }
+        code { background: #0d1117; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+        pre { background: #0d1117; padding: 16px; border-radius: 6px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>GraphQL Gateway Service</h1>
+    <p>Quarkus-powered GraphQL Gateway aggregating microservices.</p>
+
+    <div class="card">
+        <h3>Quick Links</h3>
+        <ul>
+            <li><a href="/q/graphql-ui">GraphQL UI (GraphiQL)</a></li>
+            <li><a href="/q/health">Health Check</a></li>
+            <li><a href="/q/metrics">Prometheus Metrics</a></li>
+            <li><a href="/q/openapi">OpenAPI Spec</a></li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Example Query</h3>
+        <pre><code>{
+  user(id: 1) {
+    username
+    email
+    orders {
+      id
+      status
+      totalAmount
+      products {
+        name
+        price
+      }
+    }
+  }
+}</code></pre>
+    </div>
+</body>
+</html>
