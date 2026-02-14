@@ -10,6 +10,7 @@ import org.acme.gateway.model.Order;
 import org.acme.gateway.model.User;
 import org.eclipse.microprofile.graphql.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 @GraphQLApi
 public class UserResolver {
 
+    private static final Logger LOG = Logger.getLogger(UserResolver.class);
+
     @Inject
     @RestClient
     UserClient userClient;
@@ -42,19 +45,29 @@ public class UserResolver {
     @Query("users")
     @Description("Get all users")
     public Uni<List<User>> getAllUsers() {
+        long start = System.nanoTime();
         return userClient.getAll()
-                .onItem().transform(responses ->
-                        responses.stream()
-                                .map(UserResolver::toUser)
-                                .collect(Collectors.toList())
-                );
+                .onItem().transform(responses -> {
+                    List<User> users = responses.stream()
+                            .map(UserResolver::toUser)
+                            .collect(Collectors.toList());
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] users() -> User-Service: %dms (%d results)", elapsed, users.size());
+                    return users;
+                });
     }
 
     @Query("user")
     @Description("Get a single user by ID")
     public Uni<User> getUser(@Name("id") Long id) {
+        long start = System.nanoTime();
         return userClient.getById(id)
-                .onItem().transform(UserResolver::toUser);
+                .onItem().transform(response -> {
+                    User user = toUser(response);
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] user(id=%d) -> User-Service: %dms", id, elapsed);
+                    return user;
+                });
     }
 
     // ──────────────────────────────────────────────
@@ -65,12 +78,17 @@ public class UserResolver {
     @Name("orders")
     @Description("Orders placed by this user (resolved from Order-Service)")
     public Uni<List<Order>> getOrdersForUser(@Source User user) {
+        long start = System.nanoTime();
         return orderClient.getByUserId(user.getId())
-                .onItem().transform(responses ->
-                        responses.stream()
-                                .map(UserResolver::toOrder)
-                                .collect(Collectors.toList())
-                );
+                .onItem().transform(responses -> {
+                    List<Order> orders = responses.stream()
+                            .map(UserResolver::toOrder)
+                            .collect(Collectors.toList());
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] User(%d).orders -> Order-Service: %dms (%d results)",
+                            user.getId(), elapsed, orders.size());
+                    return orders;
+                });
     }
 
     // ──────────────────────────────────────────────

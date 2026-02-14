@@ -14,6 +14,7 @@ import org.acme.gateway.model.Payment;
 import org.acme.gateway.model.Product;
 import org.eclipse.microprofile.graphql.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
  */
 @GraphQLApi
 public class OrderResolver {
+
+    private static final Logger LOG = Logger.getLogger(OrderResolver.class);
 
     @Inject
     @RestClient
@@ -49,19 +52,29 @@ public class OrderResolver {
     @Query("orders")
     @Description("Get all orders")
     public Uni<List<Order>> getAllOrders() {
+        long start = System.nanoTime();
         return orderClient.getAll()
-                .onItem().transform(responses ->
-                        responses.stream()
-                                .map(OrderResolver::toOrder)
-                                .collect(Collectors.toList())
-                );
+                .onItem().transform(responses -> {
+                    List<Order> orders = responses.stream()
+                            .map(OrderResolver::toOrder)
+                            .collect(Collectors.toList());
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] orders() -> Order-Service: %dms (%d results)", elapsed, orders.size());
+                    return orders;
+                });
     }
 
     @Query("order")
     @Description("Get a single order by ID")
     public Uni<Order> getOrder(@Name("id") Long id) {
+        long start = System.nanoTime();
         return orderClient.getById(id)
-                .onItem().transform(OrderResolver::toOrder);
+                .onItem().transform(response -> {
+                    Order order = toOrder(response);
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] order(id=%d) -> Order-Service: %dms", id, elapsed);
+                    return order;
+                });
     }
 
     // ──────────────────────────────────────────────
@@ -76,13 +89,21 @@ public class OrderResolver {
             return Uni.createFrom().item(List.of());
         }
 
+        long start = System.nanoTime();
+        int productCount = order.getProductIds().size();
+
         // Fire all product fetches in parallel using Multi
         return Multi.createFrom().iterable(order.getProductIds())
                 .onItem().transformToUniAndMerge(productId ->
                         productClient.getById(productId)
                                 .onItem().transform(OrderResolver::toProduct)
                 )
-                .collect().asList();
+                .collect().asList()
+                .onItem().invoke(products -> {
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] Order(%d).products -> Product-Service (scatter %d calls): %dms",
+                            order.getId(), productCount, elapsed);
+                });
     }
 
     // ──────────────────────────────────────────────
@@ -92,8 +113,14 @@ public class OrderResolver {
     @Name("payment")
     @Description("Payment details for this order (resolved from Payment-Service)")
     public Uni<Payment> getPaymentForOrder(@Source Order order) {
+        long start = System.nanoTime();
         return paymentClient.getByOrderId(order.getId())
-                .onItem().transform(OrderResolver::toPayment);
+                .onItem().transform(response -> {
+                    Payment payment = toPayment(response);
+                    long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    LOG.infof("[TIMING] Order(%d).payment -> Payment-Service: %dms", order.getId(), elapsed);
+                    return payment;
+                });
     }
 
     // ──────────────────────────────────────────────

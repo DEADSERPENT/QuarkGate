@@ -93,6 +93,12 @@
             <artifactId>quarkus-container-image-docker</artifactId>
         </dependency>
 
+        <!-- OpenTelemetry (distributed tracing) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-opentelemetry</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>io.quarkus</groupId>

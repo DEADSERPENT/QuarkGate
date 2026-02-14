@@ -94,6 +94,24 @@ services:
       retries: 5
 
   # ─────────────────────────────────────
+  #  TRACING (Jaeger)
+  # ─────────────────────────────────────
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC receiver
+      - "4318:4318"     # OTLP HTTP receiver
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:16686 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────
   #  MICROSERVICES
   # ─────────────────────────────────────
 
@@ -108,6 +126,8 @@ services:
     depends_on:
       user-db:
         condition: service_healthy
+      jaeger:
+        condition: service_healthy
 
   product-service:
     build:
@@ -119,6 +139,8 @@ services:
       - "8082:8082"
     depends_on:
       product-db:
+        condition: service_healthy
+      jaeger:
         condition: service_healthy
 
   order-service:
@@ -132,6 +154,8 @@ services:
     depends_on:
       order-db:
         condition: service_healthy
+      jaeger:
+        condition: service_healthy
 
   payment-service:
     build:
@@ -143,6 +167,8 @@ services:
       - "8084:8084"
     depends_on:
       payment-db:
+        condition: service_healthy
+      jaeger:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -163,6 +189,7 @@ services:
       - order-service
       - payment-service
       - redis
+      - jaeger
 
 # ─────────────────────────────────────
 #  VOLUMES
