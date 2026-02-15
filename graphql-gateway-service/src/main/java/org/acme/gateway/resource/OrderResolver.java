@@ -12,12 +12,17 @@ import org.acme.gateway.dto.downstream.ProductResponse;
 import org.acme.gateway.model.Order;
 import org.acme.gateway.model.Payment;
 import org.acme.gateway.model.Product;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.graphql.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +56,10 @@ public class OrderResolver {
 
     @Query("orders")
     @Description("Get all orders")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getAllOrdersFallback")
     public Uni<List<Order>> getAllOrders() {
         long start = System.nanoTime();
         return orderClient.getAll()
@@ -66,6 +75,10 @@ public class OrderResolver {
 
     @Query("order")
     @Description("Get a single order by ID")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getOrderFallback")
     public Uni<Order> getOrder(@Name("id") Long id) {
         long start = System.nanoTime();
         return orderClient.getById(id)
@@ -84,6 +97,10 @@ public class OrderResolver {
 
     @Name("products")
     @Description("Products in this order (resolved from Product-Service)")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getProductsForOrderFallback")
     public Uni<List<Product>> getProductsForOrder(@Source Order order) {
         if (order.getProductIds() == null || order.getProductIds().isEmpty()) {
             return Uni.createFrom().item(List.of());
@@ -112,6 +129,10 @@ public class OrderResolver {
 
     @Name("payment")
     @Description("Payment details for this order (resolved from Payment-Service)")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getPaymentForOrderFallback")
     public Uni<Payment> getPaymentForOrder(@Source Order order) {
         long start = System.nanoTime();
         return paymentClient.getByOrderId(order.getId())
@@ -121,6 +142,30 @@ public class OrderResolver {
                     LOG.infof("[TIMING] Order(%d).payment -> Payment-Service: %dms", order.getId(), elapsed);
                     return payment;
                 });
+    }
+
+    // ──────────────────────────────────────────────
+    //  Fallback Methods
+    // ──────────────────────────────────────────────
+
+    Uni<List<Order>> getAllOrdersFallback() {
+        LOG.warn("[FALLBACK] getAllOrders() — Order-Service unavailable, returning empty list");
+        return Uni.createFrom().item(Collections.emptyList());
+    }
+
+    Uni<Order> getOrderFallback(Long id) {
+        LOG.warnf("[FALLBACK] getOrder(id=%d) — Order-Service unavailable, returning null", id);
+        return Uni.createFrom().nullItem();
+    }
+
+    Uni<List<Product>> getProductsForOrderFallback(Order order) {
+        LOG.warnf("[FALLBACK] getProductsForOrder(orderId=%d) — Product-Service unavailable, returning empty list", order.getId());
+        return Uni.createFrom().item(Collections.emptyList());
+    }
+
+    Uni<Payment> getPaymentForOrderFallback(Order order) {
+        LOG.warnf("[FALLBACK] getPaymentForOrder(orderId=%d) — Payment-Service unavailable, returning null", order.getId());
+        return Uni.createFrom().nullItem();
     }
 
     // ──────────────────────────────────────────────

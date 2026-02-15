@@ -8,11 +8,18 @@ import org.acme.gateway.dto.downstream.OrderResponse;
 import org.acme.gateway.dto.downstream.UserResponse;
 import org.acme.gateway.model.Order;
 import org.acme.gateway.model.User;
+import io.quarkus.cache.CacheKey;
+import io.quarkus.cache.CacheResult;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.graphql.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +51,11 @@ public class UserResolver {
 
     @Query("users")
     @Description("Get all users")
+    @CacheResult(cacheName = "users-cache")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getAllUsersFallback")
     public Uni<List<User>> getAllUsers() {
         long start = System.nanoTime();
         return userClient.getAll()
@@ -59,7 +71,12 @@ public class UserResolver {
 
     @Query("user")
     @Description("Get a single user by ID")
-    public Uni<User> getUser(@Name("id") Long id) {
+    @CacheResult(cacheName = "user-cache")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getUserFallback")
+    public Uni<User> getUser(@Name("id") @CacheKey Long id) {
         long start = System.nanoTime();
         return userClient.getById(id)
                 .onItem().transform(response -> {
@@ -77,6 +94,10 @@ public class UserResolver {
 
     @Name("orders")
     @Description("Orders placed by this user (resolved from Order-Service)")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getOrdersForUserFallback")
     public Uni<List<Order>> getOrdersForUser(@Source User user) {
         long start = System.nanoTime();
         return orderClient.getByUserId(user.getId())
@@ -89,6 +110,25 @@ public class UserResolver {
                             user.getId(), elapsed, orders.size());
                     return orders;
                 });
+    }
+
+    // ──────────────────────────────────────────────
+    //  Fallback Methods
+    // ──────────────────────────────────────────────
+
+    Uni<List<User>> getAllUsersFallback() {
+        LOG.warn("[FALLBACK] getAllUsers() — User-Service unavailable, returning empty list");
+        return Uni.createFrom().item(Collections.emptyList());
+    }
+
+    Uni<User> getUserFallback(Long id) {
+        LOG.warnf("[FALLBACK] getUser(id=%d) — User-Service unavailable, returning null", id);
+        return Uni.createFrom().nullItem();
+    }
+
+    Uni<List<Order>> getOrdersForUserFallback(User user) {
+        LOG.warnf("[FALLBACK] getOrdersForUser(userId=%d) — Order-Service unavailable, returning empty list", user.getId());
+        return Uni.createFrom().item(Collections.emptyList());
     }
 
     // ──────────────────────────────────────────────

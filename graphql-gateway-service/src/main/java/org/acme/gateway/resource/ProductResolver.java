@@ -5,10 +5,17 @@ import jakarta.inject.Inject;
 import org.acme.gateway.client.ProductClient;
 import org.acme.gateway.dto.downstream.ProductResponse;
 import org.acme.gateway.model.Product;
+import io.quarkus.cache.CacheKey;
+import io.quarkus.cache.CacheResult;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.graphql.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +33,11 @@ public class ProductResolver {
 
     @Query("products")
     @Description("Get all products")
+    @CacheResult(cacheName = "products-cache")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getAllProductsFallback")
     public Uni<List<Product>> getAllProducts() {
         long start = System.nanoTime();
         return productClient.getAll()
@@ -41,7 +53,12 @@ public class ProductResolver {
 
     @Query("product")
     @Description("Get a single product by ID")
-    public Uni<Product> getProduct(@Name("id") Long id) {
+    @CacheResult(cacheName = "product-cache")
+    @Timeout(5000)
+    @Retry(maxRetries = 3, delay = 200)
+    @CircuitBreaker(requestVolumeThreshold = 10, failureRatio = 0.5, delay = 10000)
+    @Fallback(fallbackMethod = "getProductFallback")
+    public Uni<Product> getProduct(@Name("id") @CacheKey Long id) {
         long start = System.nanoTime();
         return productClient.getById(id)
                 .onItem().transform(response -> {
@@ -50,6 +67,16 @@ public class ProductResolver {
                     LOG.infof("[TIMING] product(id=%d) -> Product-Service: %dms", id, elapsed);
                     return product;
                 });
+    }
+
+    Uni<List<Product>> getAllProductsFallback() {
+        LOG.warn("[FALLBACK] getAllProducts() — Product-Service unavailable, returning empty list");
+        return Uni.createFrom().item(Collections.emptyList());
+    }
+
+    Uni<Product> getProductFallback(Long id) {
+        LOG.warnf("[FALLBACK] getProduct(id=%d) — Product-Service unavailable, returning null", id);
+        return Uni.createFrom().nullItem();
     }
 
     static Product toProduct(ProductResponse r) {

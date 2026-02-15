@@ -49,14 +49,14 @@
             <artifactId>quarkus-mutiny</artifactId>
         </dependency>
 
-        <!-- Caching (Caffeine in-memory + Redis) -->
+        <!-- Caching (Redis) -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-cache</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-redis-client</artifactId>
+            <artifactId>quarkus-redis-cache</artifactId>
         </dependency>
 
         <!-- Health checks & metrics (for thesis benchmarks) -->
@@ -73,6 +73,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
+        </dependency>
+
+        <!-- OIDC (Keycloak JWT authentication) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc</artifactId>
         </dependency>
 
         <!-- OpenAPI for documentation -->
