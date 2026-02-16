@@ -29,6 +29,7 @@ if "%MODE%"=="" set MODE=all
 if "%MODE%"=="rest" goto :rest
 if "%MODE%"=="graphql" goto :graphql
 if "%MODE%"=="comparison" goto :comparison
+if "%MODE%"=="cache" goto :cache
 if "%MODE%"=="quick" goto :quick
 if "%MODE%"=="all" goto :all
 goto :usage
@@ -48,6 +49,11 @@ echo Running side-by-side comparison...
 k6 run "%SCRIPT_DIR%comparison.js"
 goto :done
 
+:cache
+echo Running Redis Cache Impact benchmark...
+k6 run "%SCRIPT_DIR%cache-impact.js"
+goto :done
+
 :quick
 echo Running quick test (10 VUs, 10s each)...
 echo --- REST Waterfall ---
@@ -60,22 +66,26 @@ goto :done
 :all
 echo Running full benchmark suite...
 echo.
-echo [1/3] REST Waterfall
+echo [1/4] REST Waterfall
 k6 run "%SCRIPT_DIR%rest-waterfall.js"
 echo.
-echo [2/3] GraphQL Aggregated
+echo [2/4] GraphQL Aggregated
 k6 run "%SCRIPT_DIR%graphql-aggregated.js"
 echo.
-echo [3/3] Side-by-Side Comparison
+echo [3/4] Side-by-Side Comparison
 k6 run "%SCRIPT_DIR%comparison.js"
+echo.
+echo [4/4] Redis Cache Impact
+k6 run "%SCRIPT_DIR%cache-impact.js"
 goto :done
 
 :usage
-echo Usage: run-benchmarks.bat [rest^|graphql^|comparison^|quick^|all]
+echo Usage: run-benchmarks.bat [rest^|graphql^|comparison^|cache^|quick^|all]
 echo.
 echo   rest        - Run REST waterfall benchmark only
 echo   graphql     - Run GraphQL aggregated benchmark only
 echo   comparison  - Run side-by-side comparison
+echo   cache       - Run Redis cache impact analysis
 echo   quick       - Quick 10s smoke test for both
 echo   all         - Run full suite (default)
 exit /b 1

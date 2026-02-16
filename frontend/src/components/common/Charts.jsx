@@ -140,7 +140,7 @@ export function RevenueTimeline({ orders }) {
         {entries.map(([day, revenue]) => (
           <div key={day} className="flex-1 flex flex-col items-center gap-1">
             <span className="text-[10px] text-gray-500 font-medium">
-              ${revenue.toFixed(0)}
+              ₹{revenue.toFixed(0)}
             </span>
             <div
               className="w-full bg-indigo-500 rounded-t transition-all duration-500 min-h-[4px]"

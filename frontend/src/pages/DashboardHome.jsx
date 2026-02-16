@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client/react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Package, ShoppingCart, DollarSign } from 'lucide-react';
+import { Users, Package, ShoppingCart, IndianRupee } from 'lucide-react';
 import { GET_DASHBOARD_DATA } from '../graphql/queries/dashboardQueries';
 import PageHeader from '../components/layout/PageHeader';
 import StatCard from '../components/common/StatCard';
@@ -46,7 +46,7 @@ export default function DashboardHome() {
     {
       key: 'totalAmount',
       label: 'Amount',
-      render: (row) => `$${parseFloat(row.totalAmount).toFixed(2)}`,
+      render: (row) => `₹${parseFloat(row.totalAmount).toFixed(2)}`,
     },
     {
       key: 'createdAt',
@@ -86,8 +86,8 @@ export default function DashboardHome() {
         />
         <StatCard
           title="Revenue"
-          value={`$${totalRevenue.toFixed(2)}`}
-          icon={DollarSign}
+          value={`₹${totalRevenue.toFixed(2)}`}
+          icon={IndianRupee}
           color="green"
         />
       </div>

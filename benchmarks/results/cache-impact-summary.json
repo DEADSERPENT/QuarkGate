@@ -1,0 +1,53 @@
+{
+  "type": "Cache Impact Analysis",
+  "timestamp": "2026-02-16T09:11:12.045Z",
+  "cold_cache": {
+    "duration_ms": {
+      "avg": 15.986666666666666,
+      "min": 2,
+      "med": 14,
+      "max": 64,
+      "p(90)": 28.19999999999999,
+      "p(95)": 56
+    }
+  },
+  "warm_cache": {
+    "duration_ms": {
+      "avg": 10.985053267610112,
+      "min": 0,
+      "med": 7,
+      "max": 130,
+      "p(90)": 17,
+      "p(95)": 37
+    }
+  },
+  "mixed": {
+    "duration_ms": {
+      "p(95)": 11,
+      "avg": 5.184495916454679,
+      "min": 0,
+      "med": 4,
+      "max": 70,
+      "p(90)": 8
+    }
+  },
+  "overall": {
+    "total_requests": {
+      "count": 20197,
+      "rate": 161.49993030282877
+    },
+    "error_rate": {
+      "fails": 20197,
+      "rate": 0,
+      "passes": 0
+    },
+    "http_req_duration": {
+      "avg": 8.804621473486149,
+      "min": 0,
+      "med": 5.9925,
+      "max": 129.7922,
+      "p(90)": 13.831980000000001,
+      "p(95)": 26.8984
+    }
+  }
+}

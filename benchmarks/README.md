@@ -31,6 +31,8 @@ using [k6](https://k6.io/) load testing.
 | `rest-waterfall.js` | Sequential REST calls (N+1 pattern) | User → Orders → Products → Payments |
 | `graphql-aggregated.js` | Single GraphQL query (gateway aggregation) | One POST with nested fields |
 | `comparison.js` | Both approaches side-by-side | REST and GraphQL in parallel scenarios |
+| `cache-impact.js` | Redis cache cold vs warm performance | Cold → Warm → Stress → Mixed load |
+| `generate-report.js` | HTML report generator | Reads JSON results, produces Chart.js report |
 
 ## Quick Start
 
@@ -45,6 +47,10 @@ run-benchmarks.bat all
 run-benchmarks.bat rest
 run-benchmarks.bat graphql
 run-benchmarks.bat comparison
+run-benchmarks.bat cache
+
+# Generate HTML report from results
+node benchmarks/generate-report.js
 ```
 
 Or run k6 directly:

@@ -56,7 +56,7 @@ export default function ProductsPage() {
             <div className="flex justify-between items-start mb-3">
               <h3 className="font-semibold text-gray-900">{product.name}</h3>
               <span className="text-lg font-bold text-indigo-600">
-                ${parseFloat(product.price).toFixed(2)}
+                ₹{parseFloat(product.price).toFixed(2)}
               </span>
             </div>
             <p className="text-sm text-gray-500 mb-3 line-clamp-2">

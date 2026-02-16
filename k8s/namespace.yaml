@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quarkgate
+  labels:
+    app.kubernetes.io/part-of: quarkgate
+    purpose: mtech-thesis

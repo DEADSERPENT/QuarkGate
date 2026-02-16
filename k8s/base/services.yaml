@@ -1,0 +1,361 @@
+---
+# ═══════════════════════════════════════════════════════════════
+# QuarkGate Microservices Deployments
+# ═══════════════════════════════════════════════════════════════
+
+# ── ConfigMap: Shared service configuration ──────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quarkgate-config
+  namespace: quarkgate
+data:
+  QUARKUS_PROFILE: "docker"
+  QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+
+---
+# ── User Service ─────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: quarkgate
+  labels:
+    app: user-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+        tier: backend
+    spec:
+      containers:
+        - name: user-service
+          image: quarkgate/user-service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://user-db:5432/userdb"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: "postgres"
+          envFrom:
+            - configMapRef:
+                name: quarkgate-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: quarkgate
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8081
+      targetPort: 8081
+
+---
+# ── Product Service ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: quarkgate
+  labels:
+    app: product-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+        tier: backend
+    spec:
+      containers:
+        - name: product-service
+          image: quarkgate/product-service:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://product-db:5432/productdb"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: "postgres"
+          envFrom:
+            - configMapRef:
+                name: quarkgate-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: quarkgate
+spec:
+  selector:
+    app: product-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+
+---
+# ── Order Service ────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: quarkgate
+  labels:
+    app: order-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        tier: backend
+    spec:
+      containers:
+        - name: order-service
+          image: quarkgate/order-service:latest
+          ports:
+            - containerPort: 8083
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://order-db:5432/orderdb"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: "postgres"
+          envFrom:
+            - configMapRef:
+                name: quarkgate-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8083
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: quarkgate
+spec:
+  selector:
+    app: order-service
+  ports:
+    - port: 8083
+      targetPort: 8083
+
+---
+# ── Payment Service ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: quarkgate
+  labels:
+    app: payment-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+        tier: backend
+    spec:
+      containers:
+        - name: payment-service
+          image: quarkgate/payment-service:latest
+          ports:
+            - containerPort: 8084
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: "jdbc:postgresql://payment-db:5432/paymentdb"
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: "postgres"
+          envFrom:
+            - configMapRef:
+                name: quarkgate-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8084
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: quarkgate
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - port: 8084
+      targetPort: 8084
+
+---
+# ── GraphQL Gateway Service ─────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql-gateway
+  namespace: quarkgate
+  labels:
+    app: graphql-gateway
+    tier: gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: graphql-gateway
+  template:
+    metadata:
+      labels:
+        app: graphql-gateway
+        tier: gateway
+    spec:
+      containers:
+        - name: graphql-gateway
+          image: quarkgate/graphql-gateway-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_REST_CLIENT_USER_API_URL
+              value: "http://user-service:8081"
+            - name: QUARKUS_REST_CLIENT_PRODUCT_API_URL
+              value: "http://product-service:8082"
+            - name: QUARKUS_REST_CLIENT_ORDER_API_URL
+              value: "http://order-service:8083"
+            - name: QUARKUS_REST_CLIENT_PAYMENT_API_URL
+              value: "http://payment-service:8084"
+            - name: QUARKUS_REDIS_HOSTS
+              value: "redis://redis:6379"
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: "http://keycloak:8080/realms/quarkgate"
+          envFrom:
+            - configMapRef:
+                name: quarkgate-config
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "300m"
+            limits:
+              memory: "768Mi"
+              cpu: "750m"
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-gateway
+  namespace: quarkgate
+spec:
+  selector:
+    app: graphql-gateway
+  ports:
+    - port: 8080
+      targetPort: 8080

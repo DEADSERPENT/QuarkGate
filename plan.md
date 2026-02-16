@@ -182,3 +182,64 @@
   - GraphQL and health endpoints are publicly accessible (no token required for reads)
   - Docker profile override for Keycloak URL
 
+
+
+● All 6 tasks complete. Here's a summary of everything that was built:
+
+  ---
+  Completed: The Final 25%
+
+  1. Performance Benchmarking (10%)
+
+  - Fixed comparison.js bug (textSummary → k6Summary)
+  - Created cache-impact.js — new k6 script testing Redis cold/warm cache performance across 4 phases
+  - Created generate-report.js — Node.js report generator that reads all JSON results and produces a thesis-quality HTML report with Chart.js      
+  charts (latency, throughput, payload, cache impact, percentile curves)
+  - Updated both run-benchmarks.sh and run-benchmarks.bat with the new cache mode
+  - Generated benchmark-report.html from existing data — ready to open in browser
+
+  2. Automated Testing (5%)
+
+  - Backend (27 tests): @QuarkusTest + REST-assured integration tests for all 5 services:
+    - UserResourceTest (5 tests) — GET all, GET by ID, 404, all fields, expected data
+    - ProductResourceTest (6 tests) — GET all, GET by ID, 404, all fields, categories
+    - OrderResourceTest (8 tests) — GET all, GET by ID, 404, GET by userId, POST create, timestamps
+    - PaymentResourceTest (5 tests) — GET by orderId, 404, all fields, UPI method, PENDING status
+    - GatewayResourceTest (8 tests) — GraphQL schema introspection, type queries, health, metrics, error handling
+  - Test config: Added src/test/resources/application.properties for all 5 services (DevServices auto-start, OTel disabled)
+  - Frontend (25 tests, all passing): Vitest + React Testing Library:
+    - StatCard (5 tests), LoadingSpinner (3), ErrorAlert (3), StatusBadge (8), DataTable (6)
+
+  3. Kubernetes Deployment (5%)
+
+  - k8s/namespace.yaml — Dedicated quarkgate namespace
+  - k8s/infrastructure/ — 5 manifests: PostgreSQL (4 instances), Redis, Kafka + Zookeeper, Jaeger, Keycloak
+  - k8s/base/services.yaml — All 5 microservice Deployments + Services with health probes, resource limits, ConfigMap
+  - k8s/base/hpa.yaml — HPA for all services (gateway: 2-8 replicas, others: 2-5)
+  - k8s/base/ingress.yaml — NGINX Ingress with 3 host routes
+  - k8s/deploy.sh — Automated deployment script (namespace/infra/services/scaling/status/teardown)
+
+  4. Architecture Documentation (5%)
+
+  - docs/architecture.md — 8-section document with 7 Mermaid diagrams:
+    a. System Architecture Overview (full topology)
+    b. REST Waterfall vs GraphQL Aggregation (sequence diagrams)
+    c. Kafka Event-Driven Architecture (order→payment flow)
+    d. Keycloak Authentication Flow (OIDC/JWT sequence)
+    e. Distributed Tracing with Jaeger (span visualization)
+    f. Redis Caching Strategy (cache hit/miss flow)
+    g. Circuit Breaker State Machine (fault tolerance)
+    h. Technology Stack Summary table
+
+  ---
+  Next Steps to Run Benchmarks
+
+  With your services running (docker compose up), execute:
+  # Full benchmark suite (REST + GraphQL + Comparison + Cache)
+  benchmarks/run-benchmarks.bat all
+
+  # Generate the HTML report
+  node benchmarks/generate-report.js
+
+  # Open the report
+  start benchmarks/results/benchmark-report.html

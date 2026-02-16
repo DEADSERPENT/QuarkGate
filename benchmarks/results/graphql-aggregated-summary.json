@@ -1,0 +1,38 @@
+{
+  "type": "GraphQL Aggregated",
+  "timestamp": "2026-02-16T08:59:48.608Z",
+  "metrics": {
+    "graphql_query_total_ms": {
+      "p(90)": 10,
+      "p(95)": 13,
+      "avg": 7.236619849750362,
+      "min": 1,
+      "med": 6,
+      "max": 259
+    },
+    "graphql_payload_bytes": {
+      "max": 1028,
+      "p(90)": 1028,
+      "p(95)": 1028,
+      "avg": 702.857589473193,
+      "min": 465,
+      "med": 610
+    },
+    "graphql_total_requests": {
+      "count": 21431,
+      "rate": 147.49427945216215
+    },
+    "http_req_duration": {
+      "p(95)": 13.00335,
+      "avg": 7.181631445102895,
+      "min": 0.5105,
+      "med": 5.7523,
+      "max": 257.2328,
+      "p(90)": 9.5387
+    },
+    "http_reqs": {
+      "count": 21431,
+      "rate": 147.49427945216215
+    }
+  }
+}

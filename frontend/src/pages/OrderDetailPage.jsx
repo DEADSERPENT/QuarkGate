@@ -50,7 +50,7 @@ export default function OrderDetailPage() {
           <div>
             <p className="text-xs text-gray-500 uppercase">Total Amount</p>
             <p className="mt-1 text-lg font-bold text-gray-900">
-              ${parseFloat(order.totalAmount).toFixed(2)}
+              ₹{parseFloat(order.totalAmount).toFixed(2)}
             </p>
           </div>
           <div>
@@ -92,7 +92,7 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
                 <span className="font-bold text-indigo-600">
-                  ${parseFloat(p.price).toFixed(2)}
+                  ₹{parseFloat(p.price).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function OrderDetailPage() {
             <div>
               <p className="text-gray-500">Amount</p>
               <p className="font-medium">
-                ${parseFloat(order.payment.amount).toFixed(2)}
+                ₹{parseFloat(order.payment.amount).toFixed(2)}
               </p>
             </div>
             <div>

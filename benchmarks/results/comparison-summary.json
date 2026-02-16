@@ -1,0 +1,58 @@
+{
+  "type": "REST vs GraphQL Comparison",
+  "timestamp": "2026-02-16T09:08:46.837Z",
+  "rest": {
+    "total_duration_ms": {
+      "max": 219,
+      "p(90)": 14,
+      "p(95)": 20,
+      "avg": 11.409745762711864,
+      "min": 3,
+      "med": 8
+    },
+    "payload_bytes": {
+      "avg": 692.917372881356,
+      "min": 463,
+      "med": 609,
+      "max": 1019,
+      "p(90)": 1019,
+      "p(95)": 1019
+    },
+    "http_call_count": {
+      "count": 50139,
+      "rate": 498.86712369451374
+    },
+    "error_rate": {
+      "fails": 9440,
+      "rate": 0,
+      "passes": 0
+    }
+  },
+  "graphql": {
+    "total_duration_ms": {
+      "avg": 8.720820189274448,
+      "min": 0,
+      "med": 6,
+      "max": 226,
+      "p(90)": 10,
+      "p(95)": 15
+    },
+    "payload_bytes": {
+      "min": 465,
+      "med": 610,
+      "max": 1028,
+      "p(90)": 1028,
+      "p(95)": 1028,
+      "avg": 696.2191377497371
+    },
+    "http_call_count": {
+      "count": 9510,
+      "rate": 94.62147921448026
+    },
+    "error_rate": {
+      "rate": 0,
+      "passes": 0,
+      "fails": 9510
+    }
+  }
+}

@@ -61,6 +61,11 @@ case "$MODE" in
         k6 run "$SCRIPT_DIR/comparison.js" \
             --out json="$RESULTS_DIR/comparison-${TIMESTAMP}.json"
         ;;
+    cache)
+        echo -e "${GREEN}Running Redis Cache Impact benchmark...${NC}"
+        k6 run "$SCRIPT_DIR/cache-impact.js" \
+            --out json="$RESULTS_DIR/cache-${TIMESTAMP}.json"
+        ;;
     quick)
         echo -e "${GREEN}Running quick test (10 VUs, 10s each)...${NC}"
         echo -e "${CYAN}--- REST Waterfall ---${NC}"
@@ -73,26 +78,32 @@ case "$MODE" in
         echo -e "${GREEN}Running full benchmark suite...${NC}"
         echo ""
 
-        echo -e "${CYAN}[1/3] REST Waterfall${NC}"
+        echo -e "${CYAN}[1/4] REST Waterfall${NC}"
         k6 run "$SCRIPT_DIR/rest-waterfall.js" \
             --out json="$RESULTS_DIR/rest-${TIMESTAMP}.json"
         echo ""
 
-        echo -e "${CYAN}[2/3] GraphQL Aggregated${NC}"
+        echo -e "${CYAN}[2/4] GraphQL Aggregated${NC}"
         k6 run "$SCRIPT_DIR/graphql-aggregated.js" \
             --out json="$RESULTS_DIR/graphql-${TIMESTAMP}.json"
         echo ""
 
-        echo -e "${CYAN}[3/3] Side-by-Side Comparison${NC}"
+        echo -e "${CYAN}[3/4] Side-by-Side Comparison${NC}"
         k6 run "$SCRIPT_DIR/comparison.js" \
             --out json="$RESULTS_DIR/comparison-${TIMESTAMP}.json"
+        echo ""
+
+        echo -e "${CYAN}[4/4] Redis Cache Impact${NC}"
+        k6 run "$SCRIPT_DIR/cache-impact.js" \
+            --out json="$RESULTS_DIR/cache-${TIMESTAMP}.json"
         ;;
     *)
-        echo "Usage: $0 [rest|graphql|comparison|quick|all]"
+        echo "Usage: $0 [rest|graphql|comparison|cache|quick|all]"
         echo ""
         echo "  rest        - Run REST waterfall benchmark only"
         echo "  graphql     - Run GraphQL aggregated benchmark only"
         echo "  comparison  - Run side-by-side comparison"
+        echo "  cache       - Run Redis cache impact analysis"
         echo "  quick       - Quick 10s smoke test for both"
         echo "  all         - Run full suite (default)"
         exit 1

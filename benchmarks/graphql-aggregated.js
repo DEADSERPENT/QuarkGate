@@ -213,10 +213,9 @@ export function handleSummary(data) {
 
     return {
         'benchmarks/results/graphql-aggregated-summary.json': JSON.stringify(summary, null, 2),
-        stdout: textSummary(data, { indent: ' ', enableColors: true }),
+        stdout: k6Summary(data, { indent: ' ', enableColors: true }),
     };
 }
 
-function textSummary(data, opts) {
-    return '';
-}
+import { textSummary as k6Summary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js';
+

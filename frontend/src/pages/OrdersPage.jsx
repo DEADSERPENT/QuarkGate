@@ -43,7 +43,7 @@ export default function OrdersPage() {
     {
       key: 'totalAmount',
       label: 'Amount',
-      render: (row) => `$${parseFloat(row.totalAmount).toFixed(2)}`,
+      render: (row) => `₹${parseFloat(row.totalAmount).toFixed(2)}`,
     },
     {
       key: 'createdAt',
