@@ -6,14 +6,22 @@ import PageHeader from '../components/layout/PageHeader';
 import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';
 import StatusBadge from '../components/common/StatusBadge';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { OrderStatusChart, RevenueByCategory, RevenueTimeline } from '../components/common/Charts';
+import { SkeletonStatCards, SkeletonTable } from '../components/common/Skeleton';
 import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function DashboardHome() {
   const { data, loading, error } = useQuery(GET_DASHBOARD_DATA);
   const navigate = useNavigate();
 
-  if (loading) return <LoadingSpinner message="Loading dashboard..." />;
+  if (loading) return (
+    <div>
+      <PageHeader title="Dashboard" subtitle="Overview of all microservices via GraphQL Gateway" />
+      <SkeletonStatCards />
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent Orders</h2>
+      <SkeletonTable rows={5} cols={5} />
+    </div>
+  );
   if (error) return <ErrorAlert message={error.message} />;
 
   const { users, products, orders } = data;
@@ -82,6 +90,12 @@ export default function DashboardHome() {
           icon={DollarSign}
           color="green"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <OrderStatusChart orders={orders} />
+        <RevenueByCategory orders={orders} products={products} />
+        <RevenueTimeline orders={orders} />
       </div>
 
       <div className="mb-2">

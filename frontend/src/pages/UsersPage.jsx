@@ -3,14 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { GET_ALL_USERS } from '../graphql/queries/userQueries';
 import PageHeader from '../components/layout/PageHeader';
 import DataTable from '../components/common/DataTable';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { SkeletonTable } from '../components/common/Skeleton';
 import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function UsersPage() {
   const { data, loading, error } = useQuery(GET_ALL_USERS);
   const navigate = useNavigate();
 
-  if (loading) return <LoadingSpinner message="Loading users..." />;
+  if (loading) return (
+    <div>
+      <PageHeader title="Users" subtitle="Loading users..." />
+      <SkeletonTable rows={5} cols={4} />
+    </div>
+  );
   if (error) return <ErrorAlert message={error.message} />;
 
   const columns = [

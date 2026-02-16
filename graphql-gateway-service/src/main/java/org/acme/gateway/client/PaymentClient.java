@@ -7,6 +7,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.acme.gateway.dto.downstream.PaymentResponse;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 /**
@@ -17,7 +19,9 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
  */
 @Path("/payments")
 @RegisterRestClient(configKey = "payment-api")
+@RegisterProvider(AuthHeaderPropagationFilter.class)
 @Produces(MediaType.APPLICATION_JSON)
+@Timeout(4000)
 public interface PaymentClient {
 
     @GET

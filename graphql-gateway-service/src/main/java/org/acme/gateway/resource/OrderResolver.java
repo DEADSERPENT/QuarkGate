@@ -6,9 +6,11 @@ import jakarta.inject.Inject;
 import org.acme.gateway.client.OrderClient;
 import org.acme.gateway.client.PaymentClient;
 import org.acme.gateway.client.ProductClient;
+import org.acme.gateway.dto.downstream.CreateOrderRequest;
 import org.acme.gateway.dto.downstream.OrderResponse;
 import org.acme.gateway.dto.downstream.PaymentResponse;
 import org.acme.gateway.dto.downstream.ProductResponse;
+import org.acme.gateway.event.OrderEventBroadcaster;
 import org.acme.gateway.model.Order;
 import org.acme.gateway.model.Payment;
 import org.acme.gateway.model.Product;
@@ -49,6 +51,9 @@ public class OrderResolver {
     @Inject
     @RestClient
     PaymentClient paymentClient;
+
+    @Inject
+    OrderEventBroadcaster orderEventBroadcaster;
 
     // ──────────────────────────────────────────────
     //  Root Queries
@@ -142,6 +147,39 @@ public class OrderResolver {
                     LOG.infof("[TIMING] Order(%d).payment -> Payment-Service: %dms", order.getId(), elapsed);
                     return payment;
                 });
+    }
+
+    // ──────────────────────────────────────────────
+    //  Mutation: Create Order
+    // ──────────────────────────────────────────────
+
+    @Mutation("createOrder")
+    @Description("Create a new order (triggers Kafka event + subscription)")
+    public Uni<Order> createOrder(@Name("userId") Long userId,
+                                  @Name("totalAmount") BigDecimal totalAmount,
+                                  @Name("productIds") List<Long> productIds) {
+        CreateOrderRequest request = new CreateOrderRequest();
+        request.userId = userId;
+        request.totalAmount = totalAmount;
+        request.productIds = productIds;
+
+        return orderClient.create(request)
+                .onItem().transform(response -> {
+                    Order order = toOrder(response);
+                    orderEventBroadcaster.broadcast(order);
+                    LOG.infof("[MUTATION] createOrder -> Order-Service: orderId=%d", order.getId());
+                    return order;
+                });
+    }
+
+    // ──────────────────────────────────────────────
+    //  Subscription: Order Created
+    // ──────────────────────────────────────────────
+
+    @Subscription("orderCreated")
+    @Description("Subscribe to new order events")
+    public Multi<Order> onOrderCreated() {
+        return orderEventBroadcaster.stream();
     }
 
     // ──────────────────────────────────────────────

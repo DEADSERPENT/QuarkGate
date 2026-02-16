@@ -1,12 +1,12 @@
 package org.acme.gateway.client;
 
 import io.smallrye.mutiny.Uni;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.acme.gateway.dto.downstream.CreateOrderRequest;
 import org.acme.gateway.dto.downstream.OrderResponse;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import java.util.List;
@@ -19,7 +19,9 @@ import java.util.List;
  */
 @Path("/orders")
 @RegisterRestClient(configKey = "order-api")
+@RegisterProvider(AuthHeaderPropagationFilter.class)
 @Produces(MediaType.APPLICATION_JSON)
+@Timeout(4000)
 public interface OrderClient {
 
     @GET
@@ -32,4 +34,8 @@ public interface OrderClient {
     @GET
     @Path("/user/{userId}")
     Uni<List<OrderResponse>> getByUserId(@PathParam("userId") Long userId);
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    Uni<OrderResponse> create(CreateOrderRequest request);
 }

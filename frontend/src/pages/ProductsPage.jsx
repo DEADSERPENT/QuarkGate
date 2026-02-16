@@ -2,14 +2,19 @@ import { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { GET_ALL_PRODUCTS } from '../graphql/queries/productQueries';
 import PageHeader from '../components/layout/PageHeader';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { SkeletonCards } from '../components/common/Skeleton';
 import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function ProductsPage() {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  if (loading) return <LoadingSpinner message="Loading products..." />;
+  if (loading) return (
+    <div>
+      <PageHeader title="Products" subtitle="Loading products..." />
+      <SkeletonCards count={6} />
+    </div>
+  );
   if (error) return <ErrorAlert message={error.message} />;
 
   const products = data.products;

@@ -5,7 +5,11 @@ import {
   Package,
   ShoppingCart,
   Terminal,
+  LogIn,
+  LogOut,
+  Shield,
 } from 'lucide-react';
+import { useAuth } from '../../auth/AuthProvider';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +20,8 @@ const links = [
 ];
 
 export default function Sidebar() {
+  const { authenticated, user, roles, login, logout } = useAuth();
+
   return (
     <aside className="fixed inset-y-0 left-0 w-64 bg-sidebar flex flex-col">
       <div className="h-16 flex items-center px-6 border-b border-white/10">
@@ -47,7 +53,49 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-4 py-4 border-t border-white/10 text-xs text-indigo-300">
+      {/* Auth Section */}
+      <div className="px-3 py-3 border-t border-white/10">
+        {authenticated ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-3 py-2">
+              <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                {user?.username?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-white truncate">{user?.username}</p>
+                <div className="flex gap-1 mt-0.5">
+                  {roles.filter((r) => r === 'admin' || r === 'user').map((r) => (
+                    <span
+                      key={r}
+                      className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-indigo-700 text-indigo-200"
+                    >
+                      <Shield size={8} />
+                      {r}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium text-indigo-200 hover:bg-sidebar-hover hover:text-white rounded-lg transition-colors"
+            >
+              <LogOut size={14} />
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={login}
+            className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium text-indigo-200 hover:bg-sidebar-hover hover:text-white rounded-lg transition-colors"
+          >
+            <LogIn size={14} />
+            Sign In with Keycloak
+          </button>
+        )}
+      </div>
+
+      <div className="px-4 py-3 border-t border-white/10 text-xs text-indigo-300">
         Microservices Dashboard
         <br />
         M.Tech Thesis Project

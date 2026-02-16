@@ -5,7 +5,7 @@ import { GET_USER } from '../graphql/queries/userQueries';
 import PageHeader from '../components/layout/PageHeader';
 import DataTable from '../components/common/DataTable';
 import StatusBadge from '../components/common/StatusBadge';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { SkeletonDetailCard, SkeletonTable } from '../components/common/Skeleton';
 import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function UserDetailPage() {
@@ -15,7 +15,13 @@ export default function UserDetailPage() {
     variables: { id: parseInt(id) },
   });
 
-  if (loading) return <LoadingSpinner message="Loading user details..." />;
+  if (loading) return (
+    <div>
+      <PageHeader title="User Detail" subtitle={`User #${id}`} />
+      <SkeletonDetailCard />
+      <SkeletonTable rows={3} cols={4} />
+    </div>
+  );
   if (error) return <ErrorAlert message={error.message} />;
 
   const user = data.user;

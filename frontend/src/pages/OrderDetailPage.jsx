@@ -4,7 +4,7 @@ import { ArrowLeft, CreditCard } from 'lucide-react';
 import { GET_ORDER } from '../graphql/queries/orderQueries';
 import PageHeader from '../components/layout/PageHeader';
 import StatusBadge from '../components/common/StatusBadge';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { SkeletonDetailCard, SkeletonCards } from '../components/common/Skeleton';
 import ErrorAlert from '../components/common/ErrorAlert';
 
 export default function OrderDetailPage() {
@@ -14,7 +14,14 @@ export default function OrderDetailPage() {
     variables: { id: parseInt(id) },
   });
 
-  if (loading) return <LoadingSpinner message="Loading order details..." />;
+  if (loading) return (
+    <div>
+      <PageHeader title="Order Detail" subtitle={`Order #${id}`} />
+      <SkeletonDetailCard />
+      <h3 className="text-lg font-semibold text-gray-900 mb-3">Products</h3>
+      <SkeletonCards count={3} />
+    </div>
+  );
   if (error) return <ErrorAlert message={error.message} />;
 
   const order = data.order;
