@@ -26,3 +26,6 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# k6 binary
+benchmarks/k6.exe
