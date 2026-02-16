@@ -1,5 +1,6 @@
 package org.acme.gateway.resource;
 
+import io.smallrye.graphql.api.Subscription;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
